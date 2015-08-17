@@ -26,7 +26,6 @@ from .exceptions import (AuthenticationError, SpreadsheetNotFound,
 
 
 AUTH_SERVER = 'https://www.google.com'
-SPREADSHEETS_SERVER = 'spreadsheets.google.com'
 
 _url_key_re_v1 = re.compile(r'key=([^&#]+)')
 _url_key_re_v2 = re.compile(r'spreadsheets/d/([^&#]+)/edit')

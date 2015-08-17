@@ -14,7 +14,8 @@ from .exceptions import UnsupportedFeedTypeError, UrlParameterMissing
 
 
 SPREADSHEETS_SERVER = 'spreadsheets.google.com'
-SPREADSHEETS_FEED_URL = 'https://%s/%s/' % (SPREADSHEETS_SERVER, 'feeds')
+SPREADSHEETS_SERVER_URL = 'https://%s' % SPREADSHEETS_SERVER
+SPREADSHEETS_FEED_URL = '/'.join((SPREADSHEETS_SERVER_URL, 'feeds'))
 
 
 # General pattern
@@ -79,10 +80,9 @@ def construct_url(feedtype=None,
               'cell_id': cell_id,
               'version': worksheet_version}
 
-    params = dict((k, v) for k, v in params.items() if v is not None)
+    params = {k: v for k, v in params.iteritems() if v is not None}
 
     try:
-        return '%s%s' % (SPREADSHEETS_FEED_URL,
-                         urlpattern.format(**params))
+        return '/'.join((SPREADSHEETS_FEED_URL, urlpattern.format(**params)))
     except KeyError as e:
         raise UrlParameterMissing(e)
