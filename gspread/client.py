@@ -41,6 +41,8 @@ class Client(object):
                  oauth2client library. https://github.com/google/oauth2client
     :param http_session: (optional) A session object capable of making HTTP requests while persisting headers.
                                     Defaults to :class:`~gspread.httpsession.HTTPSession`.
+    :param request_timeout: (optional) An integral number of seconds to wait before
+                                        a client call will timeout.
 
     >>> c = gspread.Client(auth=('user@example.com', 'qwertypassword'))
 
@@ -50,9 +52,10 @@ class Client(object):
 
 
     """
-    def __init__(self, auth, http_session=None):
+    def __init__(self, auth, http_session=None, request_timeout=None):
         self.auth = auth
         self.session = http_session or HTTPSession()
+        self.request_timeout = request_timeout
 
     def _get_auth_token(self, content):
         for line in content.splitlines():
@@ -94,7 +97,7 @@ class Client(object):
                     (hasattr(self.auth, 'access_token_expired') and self.auth.access_token_expired):
                 import httplib2
 
-                http = httplib2.Http()
+                http = httplib2.Http(timeout=self.request_timeout)
                 self.auth.refresh(http)
 
             self.session.add_header('Authorization', "Bearer " + self.auth.access_token)
@@ -306,29 +309,43 @@ class Client(object):
 
         return ElementTree.fromstring(r.read())
 
+    @property
+    def request_timeout(self):
+        return self.session.timeout
 
-def login(email, password):
+    @request_timeout.setter
+    def request_timeout(self, value):
+        self.session.timeout = value
+
+
+def login(email, password, timeout=None):
     """Login to Google API using `email` and `password`.
 
     This is a shortcut function which instantiates :class:`Client`
     and performs login right away.
 
+    :param timeout: (optional) An integral number of seconds to wait before
+                                any client call (including login) will timeout.
+
     :returns: :class:`Client` instance.
 
     """
-    client = Client(auth=(email, password))
+    client = Client(auth=(email, password), request_timeout=timeout)
     client.login()
     return client
 
-def authorize(credentials):
+def authorize(credentials, timeout=None):
     """Login to Google API using OAuth2 credentials.
 
     This is a shortcut function which instantiates :class:`Client`
     and performs login right away.
 
+    :param timeout: (optional) An integral number of seconds to wait before
+                                any client call (including authorization) will timeout.
+
     :returns: :class:`Client` instance.
 
     """
-    client = Client(auth=credentials)
+    client = Client(auth=credentials, request_timeout=timeout)
     client.login()
     return client
